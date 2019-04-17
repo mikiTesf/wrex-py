@@ -17,20 +17,20 @@ class MWBExtractor:
     ]
 
     @staticmethod
-    def get_meeting_files():
-        # '../sample_mwbs/mwb_AM_201904.epub' is used as a test-file
-        # to check class functionality
-        mwb_pub = ZipFile('../sample_mwbs/mwb_AM_201904.epub', mode='r')
-        meeting_files = []
+    def get_meeting_files(pub_files):
+        pub_extracts = []
 
-        for entry_name in mwb_pub.namelist():
-            if MWBExtractor.unneeded_entry(entry_name):
-                continue
-            meeting_files.append(mwb_pub.open(entry_name))
+        for epub_archive in pub_files:
+            meeting_extracts = []
+            mwb_pub = ZipFile(epub_archive, mode='r')
 
-        # for file_ in meeting_files:
-        #     print(file_.name)
-        return meeting_files
+            for entry_name in mwb_pub.namelist():
+                if MWBExtractor.unneeded_entry(entry_name):
+                    continue
+                meeting_extracts.append(mwb_pub.open(entry_name))
+            pub_extracts.append(meeting_extracts)
+
+        return pub_extracts
 
     @staticmethod
     def unneeded_entry(entry_name):
