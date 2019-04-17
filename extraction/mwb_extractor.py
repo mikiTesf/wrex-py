@@ -1,4 +1,5 @@
 from zipfile import ZipFile
+from extraction.week_span_filterer import WeekSpanFilterer
 
 
 class MWBExtractor:
@@ -30,7 +31,8 @@ class MWBExtractor:
                 meeting_extracts.append(mwb_pub.open(entry_name))
             pub_extracts.append(meeting_extracts)
 
-        return pub_extracts
+        week_span_filterer = WeekSpanFilterer()
+        return week_span_filterer.filter(pub_extracts)
 
     @staticmethod
     def unneeded_entry(entry_name):
