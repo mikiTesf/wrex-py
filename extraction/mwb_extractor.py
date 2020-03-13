@@ -30,7 +30,7 @@ class MWBExtractor:
                     continue
 
                 content_string = mwb_pub.read(entry_name).decode('utf-8')
-                if self.unneeded_xhtml(content_string):
+                if not self.unneeded_xhtml(content_string):
                     continue
                 meeting_extracts.append(content_string)
             pub_extracts.append(meeting_extracts)
