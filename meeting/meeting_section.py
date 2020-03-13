@@ -1,7 +1,12 @@
+from typing import List
+
+
 class MeetingSection:
 
-    def __init__(self, section_kind, title, presentations):
-        self.__section_kind = section_kind
-        self.__title = title
-        # self.__presentations is a `list` of presentations under the section
-        self.__presentations = presentations
+    def __init__(self, section_kind, title):
+        self.section_kind = section_kind
+        self.title = title
+        self.presentations = None  # type: List[str]
+
+    def set_presentations(self, presentations):
+        self.presentations = presentations
