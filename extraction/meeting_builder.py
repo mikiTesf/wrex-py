@@ -31,6 +31,8 @@ class MeetingBuilder:
                     christian_section
                 ))
 
+        return meetings
+
     def get_section_content(self, section_kind, meeting_content):
         section_title = self.get_section_title(section_kind, meeting_content)
         # the first 2 lines of code surely indicate to bad design (the MeetingSection)
