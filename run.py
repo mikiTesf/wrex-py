@@ -2,7 +2,7 @@ from extraction.mwb_extractor import MWBExtractor
 from extraction.meeting_builder import MeetingBuilder
 
 extractor = MWBExtractor()
-epub_files = ["sample_mwbs/mwb_E_202001.epub"]
+epub_files = ["sample_mwbs/mwb_E_202004.epub"]
 
 meeting_files = extractor.get_meeting_files(epub_files)
 
