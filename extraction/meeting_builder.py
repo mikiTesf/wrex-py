@@ -15,6 +15,7 @@ class MeetingBuilder:
 
     def build_meeting_objects(self):
         meetings = []  # type: List[Meeting]
+        print('parsing dom to build meeting objects...')
         for single_publication_files in self.entire_publication_extracts:
             for week_meeting in single_publication_files:
                 meeting_content = BeautifulSoup(week_meeting, 'html.parser')

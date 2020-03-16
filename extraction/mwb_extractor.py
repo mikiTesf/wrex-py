@@ -20,7 +20,7 @@ class MWBExtractor:
 
     def get_meeting_files(self, pub_files):
         pub_extracts = []  # type: List[List[str]]
-
+        print('reading publication content...')
         for epub_archive in pub_files:
             meeting_extracts = []  # type: List[str]
             mwb_pub = ZipFile(epub_archive, mode='r')
