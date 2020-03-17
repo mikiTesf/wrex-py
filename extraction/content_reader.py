@@ -2,7 +2,7 @@ from typing import List
 from zipfile import ZipFile
 
 
-class MWBExtractor:
+class ContentReader:
 
     def __init__(self):
         self.__UNNEEDED_CONTENT_NAMES = [
@@ -26,26 +26,26 @@ class MWBExtractor:
             mwb_pub = ZipFile(epub_archive, mode='r')
 
             for entry_name in mwb_pub.namelist():
-                if self.unneeded_entry(entry_name):
+                if self._unneeded_entry(entry_name):
                     continue
 
                 content_string = mwb_pub.read(entry_name).decode('utf-8')
-                if not self.unneeded_xhtml(content_string):
+                if not self._unneeded_xhtml(content_string):
                     continue
                 meeting_extracts.append(content_string)
             pub_extracts.append(meeting_extracts)
 
         return pub_extracts
 
-    def unneeded_entry(self, entry_name):
+    def _unneeded_entry(self, entry_name):
         for test_name in self.__UNNEEDED_CONTENT_NAMES:
             if test_name in entry_name:
                 return True
         return False
 
-    def unneeded_xhtml(self, content_string):
+    def _unneeded_xhtml(self, content_string):
         treasures_exists = 'shadedHeader treasures' in content_string
         ministry_exists = 'shadedHeader ministry' in content_string
         christian_living_exists = 'shadedHeader christianLiving' in content_string
 
-        return (treasures_exists and ministry_exists and christian_living_exists)
+        return treasures_exists and ministry_exists and christian_living_exists

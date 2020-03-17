@@ -1,13 +1,13 @@
-from extraction.mwb_extractor import MWBExtractor
-from extraction.meeting_builder import MeetingBuilder
+from extraction.content_reader import ContentReader
+from extraction.content_parser import ContentParser
 from excel.generate_excel_doc import ExcelGenerator
 
-extractor = MWBExtractor()
+extractor = ContentReader()
 epub_files = ["sample_mwbs/mwb_E_202004.epub"]
 
 meeting_content = extractor.get_meeting_files(epub_files)
 
-meeting_builder = MeetingBuilder(meeting_content)
+meeting_builder = ContentParser(meeting_content)
 meetings = meeting_builder.build_meeting_objects()
 
 excel_generator = ExcelGenerator(meetings)
