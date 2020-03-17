@@ -12,15 +12,16 @@ from meeting.section_kind import SectionKind
 
 class ExcelGenerator(object):
 
-    def __init__(self, meeting_objects: List[List[Meeting]]):
-        self.workbook = Workbook()
+    def __init__(self, meeting_objects: List[List[Meeting]], labels: dict):
         self.meeting_object_lists = meeting_objects
+        self.labels = labels
         self.__CURRENT_ROW = 3
         self.__LEFT_COLUMNS = ['B', 'C', 'D', 'E']
         self.__RIGHT_COLUMNS = ['G', 'H', 'I', 'J']
         self.__ACTIVE_COLUMNS = self.__LEFT_COLUMNS
         # a new sheet is created for each publication so the program won't
         # use the first sheet (it will be empty). Hence, it it removed
+        self.workbook = Workbook()
         self.workbook.remove_sheet(worksheet=self.workbook.get_active_sheet())
         # formatting constants
         self.SMALL_FONT_SIZE = 15
@@ -61,7 +62,7 @@ class ExcelGenerator(object):
         current_row = str(self.__CURRENT_ROW)
         start_cell = self.__LEFT_COLUMNS[0] + str(current_row)
         end_cell = self.__RIGHT_COLUMNS[3] + str(current_row)
-        sheet[start_cell] = 'Christian Life And Ministry'  # todo: get value from config file
+        sheet[start_cell] = self.labels['meeting_name']
         sheet.merge_cells(start_cell + ':' + end_cell)
         self.__CURRENT_ROW += 2
         self._style_sheet_title(sheet)
@@ -84,13 +85,13 @@ class ExcelGenerator(object):
         current_row = str(self.__CURRENT_ROW)
         start_cell = self.__ACTIVE_COLUMNS[0] + current_row
         end_cell = self.__ACTIVE_COLUMNS[2] + current_row
-        sheet[start_cell] = 'Chairman'  # todo: get equivalent from config file
+        sheet[start_cell] = self.labels['chairman']
         sheet.merge_cells(start_cell + ':' + end_cell)
         self.__CURRENT_ROW += 1
         # opening prayer
         current_row = str(self.__CURRENT_ROW)
         start_cell = self.__ACTIVE_COLUMNS[2] + current_row
-        sheet[start_cell] = 'Opening Prayer'  # todo: get equivalent from config file
+        sheet[start_cell] = self.labels['opening_prayer']
         self.__CURRENT_ROW += 1
         self._style_header_content(week_span_row, sheet)
 
@@ -141,8 +142,8 @@ class ExcelGenerator(object):
         current_row = str(self.__CURRENT_ROW)
         main_hall_cell = self.__ACTIVE_COLUMNS[2] + current_row
         second_hall_cell = self.__ACTIVE_COLUMNS[3] + current_row
-        sheet[main_hall_cell] = 'Main Hall'  # todo: get value from config file
-        sheet[second_hall_cell] = 'Second Hall'  # todo: get value from config file
+        sheet[main_hall_cell] = self.labels['main_hall']
+        sheet[second_hall_cell] = self.labels['second_hall']
         self._style_hall_divider(self.__CURRENT_ROW, sheet)
 
     def _style_hall_divider(self, divider_row: int, sheet: Worksheet):
@@ -164,7 +165,7 @@ class ExcelGenerator(object):
 
     def _insert_section(self, meeting_section: MeetingSection, sheet: Worksheet):
         self._insert_section_title(meeting_section, sheet)
-        bible_reading = 'Bible Reading:'  # todo: get value from config file
+        bible_reading = self.labels['bible_reading']
 
         for presentation in meeting_section.presentations:
             if meeting_section.section_kind == SectionKind.TREASURES:
@@ -200,16 +201,16 @@ class ExcelGenerator(object):
         cell = self.__ACTIVE_COLUMNS[3] + str(presentation_row)
         sheet[cell].border = border
 
-    def _insert_footer_content(self, sheet: Worksheet):  # todo: get values from config file
+    def _insert_footer_content(self, sheet: Worksheet):
         footer_row = self.__CURRENT_ROW
         current_row = str(self.__CURRENT_ROW)
         cell = self.__ACTIVE_COLUMNS[2] + current_row
-        sheet[cell] = 'Reader'
+        sheet[cell] = self.labels['reader']
         self.__CURRENT_ROW += 1
 
         current_row = str(self.__CURRENT_ROW)
         cell = self.__ACTIVE_COLUMNS[2] + current_row
-        sheet[cell] = 'Concluding Prayer'
+        sheet[cell] = self.labels['concluding_prayer']
         self.__CURRENT_ROW += 3
         self._style_footer_content(footer_row, sheet)
 

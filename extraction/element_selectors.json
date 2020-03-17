@@ -1,0 +1,10 @@
+{
+    "week_span_element" : "title",
+    "treasures_section_id" : "section2",
+    "ministry_section_id": "section3",
+    "christian_life_section_id" : "section4",
+    "meeting_section_title_element" : "h2",
+    "presentations_group_selector" : "ul",
+    "presentation_element" : "li",
+    "presentation_titles_element" : "p"
+}
