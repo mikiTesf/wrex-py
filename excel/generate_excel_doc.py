@@ -236,3 +236,7 @@ class ExcelGenerator(object):
         sheet.page_setup.paperSize = Worksheet.PAPERSIZE_A4
         sheet.column_dimensions[self.__LEFT_COLUMNS[0]].width = 4
         sheet.column_dimensions[self.__RIGHT_COLUMNS[0]].width = 4
+
+        for rows in sheet.iter_rows(min_row=3):
+            for row in rows:
+                sheet.row_dimensions[row.row].height = 25
