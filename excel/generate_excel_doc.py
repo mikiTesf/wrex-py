@@ -3,6 +3,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 from datetime import datetime
+import re
 
 from typing import List
 from meeting.meeting import Meeting
@@ -78,7 +79,7 @@ class ExcelGenerator(object):
         current_row = str(self.__CURRENT_ROW)
         start_cell = self.__ACTIVE_COLUMNS[0] + current_row
         end_cell = self.__ACTIVE_COLUMNS[2] + current_row
-        sheet[start_cell] = week_span  # todo: get month name from config file
+        sheet[start_cell] = re.sub('[-|–]', ' – ', week_span)
         sheet.merge_cells(start_cell + ':' + end_cell)
         self.__CURRENT_ROW += 1
         # chairman
