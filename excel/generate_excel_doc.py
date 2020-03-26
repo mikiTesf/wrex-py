@@ -2,19 +2,19 @@ from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
+from typing import List
 from datetime import datetime
 import re
 
-from typing import List
-from meeting.meeting import Meeting
+from extraction.pub_extract import PubExtract
 from meeting.meeting_section import MeetingSection
 from meeting.section_kind import SectionKind
 
 
 class ExcelGenerator(object):
 
-    def __init__(self, meeting_objects: List[List[Meeting]], labels: dict):
-        self.meeting_object_lists = meeting_objects
+    def __init__(self, publication_extracts: List[PubExtract], labels: dict):
+        self.publication_extracts = publication_extracts
         self.labels = labels
         self.__CURRENT_ROW = 3
         self.__LEFT_COLUMNS = ['B', 'C', 'D', 'E']
@@ -31,19 +31,20 @@ class ExcelGenerator(object):
     def create_excel_doc(self):
         print('creating excel document...')
 
-        for meeting_object_list in self.meeting_object_lists:
-            self._add_populated_sheet(meeting_object_list)
+        for publication_extract in self.publication_extracts:
+            self._add_populated_sheet(publication_extract)
+            print('{} complete'.format(publication_extract.pub_name))
 
         file_name = 'wrex {}.xlsx'.format(datetime.now().strftime("%m-%d-%Y_%H:%M"))
         self.workbook.save(file_name)
         print('done...')
 
-    def _add_populated_sheet(self, meeting_objects: List[Meeting]):
-        sheet = self.workbook.create_sheet('pub')  # todo: change with publication `file name`
+    def _add_populated_sheet(self, publication_extract: PubExtract):
+        sheet = self.workbook.create_sheet(publication_extract.pub_name)
         meetings_count = 0
 
-        self._insert_sheet_title(sheet)
-        for meeting in meeting_objects:
+        self._insert_sheet_title(sheet, self._get_month_name_and_year(sheet.title))
+        for meeting in publication_extract.meetings:
             self._insert_header_content(meeting.week_span, sheet)
             self._insert_section(meeting.treasures_section, sheet)
             self._insert_section(meeting.ministry_section, sheet)
@@ -59,11 +60,18 @@ class ExcelGenerator(object):
         self.__CURRENT_ROW = 3
         self.__ACTIVE_COLUMNS = self.__LEFT_COLUMNS
 
-    def _insert_sheet_title(self, sheet: Worksheet):
+    def _get_month_name_and_year(self, sheet_name: str):
+        last_underscore_index = sheet_name.rfind('_')
+        year_and_month = sheet_name[last_underscore_index + 1:]
+        year_digits = year_and_month[:4]  # the first 4 digits represent the publication's year
+        month_digits = year_and_month[-2:]  # the last 2 digits represent the publication's month
+        return self.labels[month_digits] + ' ' + year_digits
+
+    def _insert_sheet_title(self, sheet: Worksheet, month_name_and_year: str):
         current_row = str(self.__CURRENT_ROW)
         start_cell = self.__LEFT_COLUMNS[0] + str(current_row)
         end_cell = self.__RIGHT_COLUMNS[3] + str(current_row)
-        sheet[start_cell] = self.labels['meeting_name']
+        sheet[start_cell] = self.labels['meeting_name'] + ' – ' + month_name_and_year
         sheet.merge_cells(start_cell + ':' + end_cell)
         self.__CURRENT_ROW += 2
         self._style_sheet_title(sheet)

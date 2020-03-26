@@ -1,6 +1,8 @@
 from typing import List
 from zipfile import ZipFile
 
+from extraction.pub_extract import PubExtract
+
 
 class ContentReader:
 
@@ -8,32 +10,34 @@ class ContentReader:
         self.__UNNEEDED_CONTENT_NAMES = [
             'OEBPS/images',
             'OEBPS/css',
-            'META-INF',
-            'mimetype',
             'OEBPS/pagenav',  # a number follows after 'pagenav'
-            'extracted',
             'OEBPS/content.opf',
             'OEBPS/cover.xhtml',
             'OEBPS/toc.ncx',
-            'OEBPS/toc.xhtml'
+            'OEBPS/toc.xhtml',
+            'META-INF',
+            'mimetype',
+            'extracted'
         ]
 
-    def get_meeting_files(self, pub_files):
-        pub_extracts = []  # type: List[List[str]]
+    def get_publication_extracts(self, pub_files):
+        pub_extracts = []  # type: List[PubExtract]
         print('reading publication content...')
-        for epub_archive in pub_files:
-            meeting_extracts = []  # type: List[str]
-            mwb_pub = ZipFile(epub_archive, mode='r')
 
-            for entry_name in mwb_pub.namelist():
+        for mwb_pub in pub_files:
+            meeting_extracts = []
+            epub_archive = ZipFile(mwb_pub)
+
+            for entry_name in epub_archive.namelist():
                 if self._unneeded_entry(entry_name):
                     continue
 
-                content_string = mwb_pub.read(entry_name).decode('utf-8')
+                content_string = epub_archive.read(entry_name).decode('utf-8')
                 if not self._unneeded_xhtml(content_string):
                     continue
                 meeting_extracts.append(content_string)
-            pub_extracts.append(meeting_extracts)
+            epub_archive.close()
+            pub_extracts.append(PubExtract(mwb_pub.name, meeting_extracts))
 
         return pub_extracts
 
