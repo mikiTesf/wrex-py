@@ -1,10 +1,12 @@
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl.worksheet.page import PageMargins
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 from typing import List
 from datetime import datetime
 import re
+import json
 
 from extraction.pub_extract import PubExtract
 from meeting.meeting_section import MeetingSection
@@ -25,8 +27,11 @@ class ExcelGenerator(object):
         self.workbook = Workbook()
         self.workbook.remove_sheet(worksheet=self.workbook.get_active_sheet())
         # formatting constants
-        self.SMALL_FONT_SIZE = 15
-        self.LARGE_FONT_SIZE = 16
+        with open('excel/config.json', mode='r') as config:
+            config_json = json.load(config)
+            self.TITLE_FONT_SIZE = config_json['fonts']['title_font']
+            self.SMALL_FONT_SIZE = config_json['fonts']['small_font']
+            self.LARGE_FONT_SIZE = config_json['fonts']['large_font']
 
     def create_excel_doc(self):
         print('creating excel document...')
@@ -78,7 +83,7 @@ class ExcelGenerator(object):
 
     def _style_sheet_title(self, sheet: Worksheet):
         cell = self.__ACTIVE_COLUMNS[0] + str(3)
-        sheet[cell].font = Font(bold=True, size=self.LARGE_FONT_SIZE)
+        sheet[cell].font = Font(bold=True, size=self.TITLE_FONT_SIZE)
         sheet[cell].alignment = Alignment(horizontal='center', vertical='center')
 
     def _insert_header_content(self, week_span: str, sheet: Worksheet):
@@ -243,6 +248,8 @@ class ExcelGenerator(object):
 
     def _final_styling_touches(self, sheet: Worksheet):
         sheet.page_setup.paperSize = Worksheet.PAPERSIZE_A4
+        sheet.sheet_properties.pageSetUpPr.fitToPage = True
+        sheet.page_margins = PageMargins(left=0.4, right=0.4)
         sheet.column_dimensions[self.__LEFT_COLUMNS[0]].width = 4
         sheet.column_dimensions[self.__RIGHT_COLUMNS[0]].width = 4
 
