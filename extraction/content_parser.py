@@ -3,6 +3,7 @@ from typing import List
 from bs4 import BeautifulSoup
 import json
 
+from extraction.pub_extract import PubExtract
 from meeting.meeting import Meeting
 from meeting.section_kind import SectionKind
 from meeting.meeting_section import MeetingSection
@@ -10,7 +11,7 @@ from meeting.meeting_section import MeetingSection
 
 class ContentParser:
 
-    def __init__(self, entire_publication_extracts: List[List[str]], filter_for_minute: str):
+    def __init__(self, entire_publication_extracts: List[PubExtract], filter_for_minute: str):
         self.entire_publication_extracts = entire_publication_extracts
         self.filter_for_minute = filter_for_minute
 
@@ -18,12 +19,13 @@ class ContentParser:
             self.element_selectors = json.load(json_file)
 
     def build_meeting_objects(self):
-        meeting_lists = []  # type: List[List[Meeting]]
         print('parsing dom to build meeting objects...')
-        for single_publication_files in self.entire_publication_extracts:
-            meetings = []
-            for week_meeting in single_publication_files:
-                meeting_content = BeautifulSoup(week_meeting, 'html.parser')
+
+        for single_publication_extracts in self.entire_publication_extracts:
+            meetings = []  # type: List[Meeting]
+
+            for week_meeting_content in single_publication_extracts.meetings:
+                meeting_content = BeautifulSoup(week_meeting_content, 'html.parser')
                 # the next few lines is where the meeting object is built
                 week_span = meeting_content.find(self.element_selectors["week_span_element"]).text
                 treasures_section = self.get_section_content(SectionKind.TREASURES, meeting_content)
@@ -36,9 +38,9 @@ class ContentParser:
                     ministry_section,
                     christian_section)
                 )
-            meeting_lists.append(meetings)
+            single_publication_extracts.meetings = meetings
 
-        return meeting_lists
+        return self.entire_publication_extracts
 
     def get_section_content(self, section_kind, meeting_content):
         section_title = self.get_section_title(section_kind, meeting_content)
