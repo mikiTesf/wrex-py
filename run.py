@@ -1,6 +1,6 @@
 from extraction.content_reader import ContentReader
 from extraction.content_parser import ContentParser
-from excel.generate_excel_doc import ExcelGenerator
+from excel.excel_doc_generator import ExcelGenerator
 
 import json
 

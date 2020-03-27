@@ -29,9 +29,12 @@ class ExcelGenerator(object):
         # formatting constants
         with open('excel/config.json', mode='r') as config:
             config_json = json.load(config)
-            self.TITLE_FONT_SIZE = config_json['fonts']['title_font']
-            self.SMALL_FONT_SIZE = config_json['fonts']['small_font']
-            self.LARGE_FONT_SIZE = config_json['fonts']['large_font']
+            self.TITLE_FONT_SIZE = config_json['font']['title']
+            self.SMALL_FONT_SIZE = config_json['font']['small']
+            self.LARGE_FONT_SIZE = config_json['font']['large']
+            self.MARGIN_SIZE = config_json['length']['margin']
+            self.ROW_HEIGHT = config_json['length']['row_height']
+            self.TITLE_BACKGROUND_COLOR = config_json['color']['section_title_background']
 
     def create_excel_doc(self):
         print('creating excel document...')
@@ -149,7 +152,7 @@ class ExcelGenerator(object):
         cell = self.__ACTIVE_COLUMNS[0] + str(title_row)
         sheet[cell].font = Font(bold=True, size=self.LARGE_FONT_SIZE)
         sheet[cell].alignment = Alignment(horizontal='left', vertical='center')
-        sheet[cell].fill = PatternFill(patternType='solid', fgColor='C8C8C8')
+        sheet[cell].fill = PatternFill(patternType='solid', fgColor=self.TITLE_BACKGROUND_COLOR)
         sheet[cell].border = Border(top=Side(border_style='thin'))
 
     def _insert_hall_divider(self, sheet):
@@ -249,10 +252,10 @@ class ExcelGenerator(object):
     def _final_styling_touches(self, sheet: Worksheet):
         sheet.page_setup.paperSize = Worksheet.PAPERSIZE_A4
         sheet.sheet_properties.pageSetUpPr.fitToPage = True
-        sheet.page_margins = PageMargins(left=0.4, right=0.4)
+        sheet.page_margins = PageMargins(left=self.MARGIN_SIZE, right=self.MARGIN_SIZE)
         sheet.column_dimensions[self.__LEFT_COLUMNS[0]].width = 4
         sheet.column_dimensions[self.__RIGHT_COLUMNS[0]].width = 4
 
         for rows in sheet.iter_rows(min_row=3):
             for row in rows:
-                sheet.row_dimensions[row.row].height = 25
+                sheet.row_dimensions[row.row].height = self.ROW_HEIGHT

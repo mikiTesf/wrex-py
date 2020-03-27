@@ -1,7 +1,14 @@
 {
-    "fonts" : {
-        "title_font" : 18,
-        "small_font" : 15,
-        "large_font" : 16
+    "font" : {
+        "title" : 18,
+        "small" : 15,
+        "large" : 16
+    },
+    "length" : {
+        "margin" : 0.4,
+        "row_height" : 25
+    },
+    "color" : {
+        "section_title_background" : "C8C8C8"
     }
 }
