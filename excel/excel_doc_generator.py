@@ -40,8 +40,9 @@ class ExcelGenerator(object):
         print('creating excel document...')
 
         for publication_extract in self.publication_extracts:
+            print('{}'.format(publication_extract.pub_name), end='\t')
             self._add_populated_sheet(publication_extract)
-            print('{} complete'.format(publication_extract.pub_name))
+            print('{}OK{}'.format('\033[92m', '\033[0m'))
 
         file_name = 'wrex {}.xlsx'.format(datetime.now().strftime("%m-%d-%Y_%H:%M"))
         self.workbook.save(file_name)

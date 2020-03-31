@@ -3,5 +3,4 @@
 env/
 202019121.xhtml
 refactor.txt
-sample_mwbs/mwb_AM_201904.epub
-sample_mwbs/mwb_AM_201905.epub
+sample_mwbs/*

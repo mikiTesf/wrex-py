@@ -44,8 +44,6 @@ class ContentParser:
 
     def get_section_content(self, section_kind, meeting_content):
         section_title = self.get_section_title(section_kind, meeting_content)
-        # the first 2 lines of code surely indicate to bad design (the MeetingSection)
-        # object must be able to be declared without fetching the section's title first
         meeting_section = MeetingSection(section_kind, section_title)
         section_presentations = self.get_section_presentations(section_kind, meeting_content)
         meeting_section.set_presentations(section_presentations)
