@@ -4,43 +4,57 @@ from excel.excel_doc_generator import ExcelGenerator
 
 import json
 import sys
+import collections
+import re
 
 content_reader = ContentReader()
-# "sample_mwbs/mwb_E_201909.epub", "sample_mwbs/mwb_E_202001.epub", "sample_mwbs/mwb_E_202004.epub"
-# "sample_mwbs/mwb_TI_201904.epub"
-# "sample_mwbs/mwb_AM_201904.epub", "sample_mwbs/mwb_AM_201905.epub"
-# "sample_mwbs/mwb_F_201912.epub"
+HELP = """
+NAME
+        wrex-py (from the original wrex written in Java)
 
-# parse options and arguments from sys.argv
+SYNOPSIS
+        python3 wrex.py [-v|--version] [-h|--help] [<paths>]
+
+DESCRIPTION
+        Extracts the presentations in an MWB (Meeting Workbook) publication and prepares an Excel document
+        making assignments easy for the responsible Elder or Ministerial Servant. It is mandatory that all
+        files passed to WREX be in the EPUB format.
+
+OPTIONS
+        -h, --help
+            Display this help and exit.
+
+        -v, --version
+            Show version information and exit.
+"""
+VERSION = 'v0.1'
 
 options = []
-arguments = []
+file_args = []
 
-for string in sys.argv[1:]:
-    if string[0:2] == '--':
-        options.append(string)
-    else:
-        arguments.append(string)
+raw_arguments = collections.deque(sys.argv[1:])
 
-if '--help' in options:
-    print('WREX-PY: The Python version of WREX! This is such a cool application!')
-    sys.exit()
-elif '--version' in options:
-    print('v0.1 [build 1053]')
+if len(raw_arguments) == 0:
+    print(HELP)
     sys.exit()
 
-if len(arguments) == 0:
-    print('No publications passed. Exiting...')
-    sys.exit()
+while len(raw_arguments) != 0:
+    arg = raw_arguments.popleft()
 
-file_paths = arguments
+    if arg in ['-h', '--help']:
+        print(HELP)
+        sys.exit()
+    if arg in ['-v', '--version']:
+        print(VERSION)
+        sys.exit()
 
-epub_files = []
+    try:
+        file_args.append(open(arg, mode='rb'))
+    except (FileNotFoundError, IsADirectoryError):
+        print(HELP)
+        sys.exit()
 
-for file_path in sorted(file_paths):
-    epub_files.append(open(file_path, mode='rb'))
-
-pub_extracts = content_reader.get_publication_extracts(epub_files)
+pub_extracts = content_reader.get_publication_extracts(file_args)
 
 with open('language/english.json', mode='r') as language_file:
     language_pack = json.load(language_file)
