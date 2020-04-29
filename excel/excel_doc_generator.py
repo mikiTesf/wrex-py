@@ -44,8 +44,8 @@ class ExcelGenerator(object):
             self._add_populated_sheet(publication_extract)
             print('[{}OK{}]'.format('\033[92m', '\033[0m'))
 
-        file_name = 'wrex {}.xlsx'.format(datetime.now().strftime("%m-%d-%Y_%H:%M"))
-        self.workbook.save(self.labels['lang_key'] + '_' + file_name)
+        file_name = 'wrex {}_{}.xlsx'.format(datetime.now().strftime("%m-%d-%Y_%H:%M"), self.labels['lang_key'])
+        self.workbook.save(file_name)
         print('done...')
 
     def _add_populated_sheet(self, publication_extract: PubExtract):
