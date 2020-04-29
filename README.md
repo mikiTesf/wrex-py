@@ -21,3 +21,5 @@ OPTIONS
         -v, --version
             Show version information and exit.
 ```
+## Contribution
+Contributions are always welcome. One way is to translate the values in the JSON files in [language](language/) to the language indicated by the file names.
