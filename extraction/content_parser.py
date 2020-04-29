@@ -2,6 +2,7 @@ from typing import List
 
 from bs4 import BeautifulSoup
 import json
+from os import sep
 
 from extraction.pub_extract import PubExtract
 from meeting.meeting import Meeting
@@ -11,11 +12,11 @@ from meeting.meeting_section import MeetingSection
 
 class ContentParser:
 
-    def __init__(self, entire_publication_extracts: List[PubExtract], filter_for_minute: str):
+    def __init__(self, entire_publication_extracts: List[PubExtract] = None, filter_for_minute: str = None):
         self.entire_publication_extracts = entire_publication_extracts
         self.filter_for_minute = filter_for_minute
 
-        with open('extraction/element_selectors.json', 'r') as json_file:
+        with open('extraction{}element_selectors.json'.format(sep), 'r') as json_file:
             self.element_selectors = json.load(json_file)
 
     def build_meeting_objects(self):
@@ -66,7 +67,6 @@ class ContentParser:
     def get_section_presentations(self, section_kind: SectionKind, meeting_content: BeautifulSoup):
         section_dom = self.get_section_dom(section_kind, meeting_content)
         presentations = []
-        filter_for_minute = self.filter_for_minute
         section_dom = section_dom.find_all(self.element_selectors["presentation_element"])
 
         if section_kind == SectionKind.CHRISTIAN_LIVING:
@@ -76,10 +76,10 @@ class ContentParser:
         for li in section_dom:
             presentation_content = li.find_next(self.element_selectors["presentation_titles_element"]).text
 
-            if filter_for_minute not in presentation_content:
+            if self.filter_for_minute not in presentation_content:
                 continue
-            presentation_content = presentation_content[0:presentation_content.index(filter_for_minute)]
-            presentation_content = presentation_content + filter_for_minute + ')'
+            presentation_content = presentation_content[0:presentation_content.index(self.filter_for_minute)]
+            presentation_content = presentation_content + self.filter_for_minute + ')'
             presentations.append(presentation_content)
 
         return presentations
