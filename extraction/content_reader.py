@@ -1,7 +1,10 @@
+from extraction.pub_extract import PubExtract
+
 from typing import List
 from zipfile import ZipFile
+from zipfile import BadZipFile
 
-from extraction.pub_extract import PubExtract
+import sys
 
 
 class ContentReader:
@@ -22,11 +25,16 @@ class ContentReader:
 
     def get_publication_extracts(self, pub_files):
         pub_extracts = []  # type: List[PubExtract]
-        print('reading publication content...')
+        print('reading file(s\') content...')
 
         for mwb_pub in pub_files:
             meeting_extracts = []
-            epub_archive = ZipFile(mwb_pub)
+
+            try:
+                epub_archive = ZipFile(mwb_pub)
+            except BadZipFile:
+                print('"{}" is not an EPUB file.'.format(mwb_pub.name))
+                sys.exit()
 
             for entry_name in epub_archive.namelist():
                 if self._unneeded_entry(entry_name):
