@@ -50,7 +50,7 @@ while len(raw_arguments) != 0:
 
     try:
         file_args.append(open(arg, mode='rb'))
-    except FileNotFoundError:
+    except (FileNotFoundError, IsADirectoryError):
         print(HELP)
         sys.exit()
 
