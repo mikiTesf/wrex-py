@@ -7,33 +7,21 @@ from os import sep
 
 
 content_reader = ContentReader()
-HELP = """
-NAME
-        wrex-py (from the original wrex written in Java)
-
-SYNOPSIS
-        python3 wrex.py [-v|--version] [-h|--help] [<paths>]
-
-DESCRIPTION
-        Extracts the presentations in an MWB (Meeting Workbook) publication and prepares an Excel document
-        making assignments easy for the responsible Elder or Ministerial Servant. It is mandatory that all
-        files passed to WREX be in the EPUB format.
-
-OPTIONS
-        -h, --help
-            Display this help and exit.
-
-        -v, --version
-            Show version information and exit.
-"""
 VERSION = 'v0.1'
 LANGUAGE_FOLDER = 'language' + sep
 
 try:
-    with open(LANGUAGE_FOLDER + 'lang_code.json', mode='r') as lang_resolver:
+    with open('HELP', 'r') as help_file:
+        HELP = help_file.read()
+except FileNotFoundError:
+    HELP = 'Help file is missing. Please read the documentation at https://www.github.com/mikiTesf/wrex-py'
+
+try:
+    lang_resolver_path = LANGUAGE_FOLDER + 'lang_code.json'
+    with open(lang_resolver_path, mode='r') as lang_resolver:
         LANG_CODE_PAIR = json.load(lang_resolver)
 except FileNotFoundError:
-    print(LANGUAGE_FOLDER, 'folder missing. Exiting...')
+    print(lang_resolver_path, 'missing. Exiting...')
     sys.exit()
 
 
