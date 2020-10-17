@@ -1,12 +1,13 @@
+from datetime import datetime
+import re
+import json
+from typing import List
+from os.path import join, dirname
+
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.worksheet.page import PageMargins
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-
-from typing import List
-from datetime import datetime
-import re
-import json
 
 from extraction.pub_extract import PubExtract
 from meeting.meeting_section import MeetingSection
@@ -27,7 +28,7 @@ class ExcelGenerator(object):
         self.workbook = Workbook()
         self.workbook.remove_sheet(worksheet=self.workbook.get_active_sheet())
         # formatting constants
-        with open('excel/config.json', mode='r') as config:
+        with open(join(dirname(__file__), 'config.json'), mode='r') as config:
             config_json = json.load(config)
             self.TITLE_FONT_SIZE = config_json['font']['title']
             self.SMALL_FONT_SIZE = config_json['font']['small']
@@ -37,22 +38,28 @@ class ExcelGenerator(object):
             self.TITLE_BACKGROUND_COLOR = config_json['color']['section_title_background']
 
     def create_excel_doc(self):
+        if len(self.publication_extracts) == 0:
+            return
         print('creating excel document...')
 
         for publication_extract in self.publication_extracts:
-            print('{}'.format(publication_extract.pub_name), end='\t')
+            print("preparing mwb({}) {}/{}".format(
+                self.labels['lang_key'], publication_extract.pub_month, publication_extract.pub_year), end='  ')
             self._add_populated_sheet(publication_extract)
             print('[{}OK{}]'.format('\033[92m', '\033[0m'))
 
-        file_name = 'wrex {}_{}.xlsx'.format(datetime.now().strftime("%m-%d-%Y_%H:%M"), self.labels['lang_key'])
+        file_name = 'WREX_{}_{}.xlsx'.format(datetime.now().strftime("%m-%d-%Y_%H:%M"), self.labels['lang_key'])
         self.workbook.save(file_name)
-        print('done...')
+        print('done...', "saved to '{}'".format(file_name))
 
     def _add_populated_sheet(self, publication_extract: PubExtract):
         sheet = self.workbook.create_sheet(publication_extract.pub_name)
         meetings_count = 0
 
-        self._insert_sheet_title(sheet, self._get_month_name_and_year(sheet.title))
+        self._insert_sheet_title(
+            sheet,
+            self.labels[publication_extract.pub_month] + publication_extract.pub_year)
+
         for meeting in publication_extract.meetings:
             self._insert_header_content(meeting.week_span, sheet)
             self._insert_section(meeting.treasures_section, sheet)
@@ -68,13 +75,6 @@ class ExcelGenerator(object):
         # reset indexes and make them ready for the next sheet
         self.__CURRENT_ROW = 3
         self.__ACTIVE_COLUMNS = self.__LEFT_COLUMNS
-
-    def _get_month_name_and_year(self, sheet_name: str):
-        last_underscore_index = sheet_name.rfind('_')
-        year_and_month = sheet_name[last_underscore_index + 1:]
-        year_digits = year_and_month[:4]  # the first 4 digits represent the publication's year
-        month_digits = year_and_month[-2:]  # the last 2 digits represent the publication's month
-        return self.labels[month_digits] + ' ' + year_digits
 
     def _insert_sheet_title(self, sheet: Worksheet, month_name_and_year: str):
         current_row = str(self.__CURRENT_ROW)
