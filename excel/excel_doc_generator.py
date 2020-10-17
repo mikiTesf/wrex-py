@@ -139,14 +139,15 @@ class ExcelGenerator(object):
         current_row = str(self.__CURRENT_ROW)
         start_cell = self.__ACTIVE_COLUMNS[0] + current_row
         sheet[start_cell] = meeting_section.title
-
-        if meeting_section.section_kind == SectionKind.IMPROVE_IN_MINISTRY:
+        # by default the right most cell at which merging cells ends is on the 5th column (including the offset)
+        end_cell = self.__ACTIVE_COLUMNS[3] + current_row
+        # but if the section is 'IMPROVE_IN_MINISTRY' and the user requests hall-dividing
+        # rows then it changes to the 3rd row
+        if (meeting_section.section_kind == SectionKind.IMPROVE_IN_MINISTRY) and self.insert_hall_divider:
             end_cell = self.__ACTIVE_COLUMNS[1] + current_row
             self._insert_hall_divider(sheet)
-        else:
-            end_cell = self.__ACTIVE_COLUMNS[3] + current_row
-        sheet.merge_cells(start_cell + ':' + end_cell)
 
+        sheet.merge_cells(start_cell + ':' + end_cell)
         self._style_section_title(self.__CURRENT_ROW, sheet)
         self.__CURRENT_ROW += 1
 
@@ -188,19 +189,20 @@ class ExcelGenerator(object):
 
         for presentation in meeting_section.presentations:
             if meeting_section.section_kind == SectionKind.TREASURES:
-                if bible_reading in presentation:
+                if (bible_reading in presentation) and self.insert_hall_divider:
                     self._insert_hall_divider(sheet)
                     self.__CURRENT_ROW += 1
             current_row = str(self.__CURRENT_ROW)
             start_cell = self.__ACTIVE_COLUMNS[1] + current_row
 
-            if meeting_section.section_kind == SectionKind.IMPROVE_IN_MINISTRY:
+            if (meeting_section.section_kind == SectionKind.IMPROVE_IN_MINISTRY) and self.insert_hall_divider:
                 end_cell = self.__ACTIVE_COLUMNS[1] + current_row
             else:
                 end_cell = self.__ACTIVE_COLUMNS[2] + current_row
             sheet[start_cell] = presentation
 
-            if bible_reading not in presentation:
+            if (bible_reading not in presentation) or \
+                    (bible_reading in presentation and not self.insert_hall_divider):
                 sheet.merge_cells(start_cell + ':' + end_cell)
             self._style_section(self.__CURRENT_ROW, sheet)
             self.__CURRENT_ROW += 1
@@ -256,7 +258,9 @@ class ExcelGenerator(object):
         sheet.sheet_properties.pageSetUpPr.fitToPage = True
         sheet.page_margins = PageMargins(left=self.MARGIN_SIZE, right=self.MARGIN_SIZE)
         sheet.column_dimensions[self.__LEFT_COLUMNS[0]].width = 4
+        sheet.column_dimensions[self.__LEFT_COLUMNS[1]].width = 42
         sheet.column_dimensions[self.__RIGHT_COLUMNS[0]].width = 4
+        sheet.column_dimensions[self.__RIGHT_COLUMNS[1]].width = 42
 
         for rows in sheet.iter_rows(min_row=3):
             for row in rows:
