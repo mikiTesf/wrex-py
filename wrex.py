@@ -27,7 +27,7 @@ class WREX:
         lang_pack = open(join(self._LANGUAGE_FOLDER, lang_pack_name), mode='r')
         return json.load(lang_pack)
 
-    def read_pubs_and_generate_excel(self, file_args: list):
+    def read_pubs_and_generate_excel(self, file_args: list, insert_hall_dividers: bool):
         lang_pub_pair = self.get_lang_pub_pair(file_args)
 
         for lang_key in lang_pub_pair:
@@ -35,7 +35,7 @@ class WREX:
             # generate Excel document(s)
             excel_generator = ExcelGenerator(
                 self.get_pub_extracts(lang_pub_pair[lang_key],
-                                      language_pack['filter_for_minute']), language_pack)
+                                      language_pack['filter_for_minute']), language_pack, insert_hall_dividers)
             excel_generator.create_excel_doc()
 
     @staticmethod
@@ -92,10 +92,13 @@ if __name__ == '__main__':
     arg_parser.version = 'version 0.1'
     arg_parser.add_argument('path', action='store',
                             help='path to a meeting workbook file(s)', nargs='+')
+    arg_parser.add_argument('-l', '--hall-divider', action='store_true',
+                            help='insert a hall dividing row above presentation rows'
+                                 ' (bible reading, improve in ministry, etc.)')
     arg_parser.add_argument('-v', '--version', action='version')
 
     parsed_args = arg_parser.parse_args()
 
     wrex = WREX()
     wrex.read_pubs_and_generate_excel(
-        [open(pub, 'rb') for pub in parsed_args.path])
+        [open(pub, 'rb') for pub in parsed_args.path], parsed_args.hall_divider)

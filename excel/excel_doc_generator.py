@@ -16,13 +16,14 @@ from meeting.section_kind import SectionKind
 
 class ExcelGenerator(object):
 
-    def __init__(self, publication_extracts: List[PubExtract], labels: dict):
+    def __init__(self, publication_extracts: List[PubExtract], labels: dict, insert_hall_dividers: bool):
         self.publication_extracts = publication_extracts
         self.labels = labels
         self.__CURRENT_ROW = 3
         self.__LEFT_COLUMNS = ['B', 'C', 'D', 'E']
         self.__RIGHT_COLUMNS = ['G', 'H', 'I', 'J']
         self.__ACTIVE_COLUMNS = self.__LEFT_COLUMNS
+        self.insert_hall_divider = insert_hall_dividers
         # a new sheet is created for each publication so the program won't
         # use the first sheet (it will be empty). Hence, it it removed
         self.workbook = Workbook()
