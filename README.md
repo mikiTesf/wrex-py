@@ -1,5 +1,5 @@
 # WREX-Py
-[WREX](https://github.com/mikiTesf/wrex) in Python. WREX-Py does not come with a user interface but compared to the original program written in Java, it is slightly faster.
+[WREX](https://github.com/mikiTesf/wrex) in Python. WREX-Py does not come with a user interface.
 <br/><br/>
 ### How to use **WREX-Py**?
 
@@ -23,5 +23,5 @@ OPTIONS
             Show version information and exit.
 ```
 ### Contribution
-Contributions are always welcome. One way is to translate the values in the JSON files in [language](language/) to the languages indicated by the file names.
+Contributions are always welcome. One way is to translate the values in the JSON files in [language](./language) to the languages indicated by the file names.
 Right now, all values in almost all the files are written in English.

@@ -1,10 +1,10 @@
-from extraction.pub_extract import PubExtract
-
 from typing import List
+from os.path import basename
+
 from zipfile import ZipFile
 from zipfile import BadZipFile
 
-import sys
+from extraction.pub_extract import PubExtract
 
 
 class ContentReader:
@@ -25,7 +25,7 @@ class ContentReader:
 
     def get_publication_extracts(self, pub_files):
         pub_extracts = []  # type: List[PubExtract]
-        print('reading file(s\') content...')
+        print('reading file(s)...')
 
         for mwb_pub in pub_files:
             meeting_extracts = []
@@ -33,19 +33,19 @@ class ContentReader:
             try:
                 epub_archive = ZipFile(mwb_pub)
             except BadZipFile:
-                print('"{}" is not an EPUB file.'.format(mwb_pub.name))
-                sys.exit()
+                print('"{}" is not an EPUB file. Skipping...'.format(mwb_pub.name))
+                continue
 
             for entry_name in epub_archive.namelist():
                 if self._unneeded_entry(entry_name):
                     continue
 
                 content_string = epub_archive.read(entry_name).decode('utf-8')
-                if not self._unneeded_xhtml(content_string):
+                if not self._is_a_meeting_xhtml(content_string):
                     continue
                 meeting_extracts.append(content_string)
             epub_archive.close()
-            pub_extracts.append(PubExtract(mwb_pub.name, meeting_extracts))
+            pub_extracts.append(PubExtract(basename(mwb_pub.name), meeting_extracts))
 
         return pub_extracts
 
@@ -55,7 +55,8 @@ class ContentReader:
                 return True
         return False
 
-    def _unneeded_xhtml(self, content_string):
+    @staticmethod
+    def _is_a_meeting_xhtml(content_string):
         treasures_exists = 'shadedHeader treasures' in content_string
         ministry_exists = 'shadedHeader ministry' in content_string
         christian_living_exists = 'shadedHeader christianLiving' in content_string
