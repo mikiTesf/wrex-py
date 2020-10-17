@@ -1,26 +1,25 @@
 # WREX-Py
-[WREX](https://github.com/mikiTesf/wrex) in Python. WREX-Py does not come with a user interface.
+[WREX](https://github.com/mikiTesf/wrex) in Python. WREX-Py does not come with a user interface but it's CLI interface is easy and intuitive.
 <br/><br/>
 ### How to use **WREX-Py**?
 
 ```
-NAME
-        wrex-py (from the original wrex written in Java)
+usage: wrex-py [-h] [-l] [-v] path [path ...]
 
-SYNOPSIS
-        python3 wrex.py [-v|--version] [-h|--help] [<paths>]
+    wrex-py (from the original wrex written in Java) extracts the presentations in a Meeting Workbook and
+    prepares an Excel document making assignments easy for the responsible Elder or Ministerial Servant.
+    It is mandatory that all files passed to wrex-py be in the EPUB format.
 
-DESCRIPTION
-        Extracts the presentations in an MWB (Meeting Workbook) publication and prepares an Excel document
-        making assignments easy for the responsible Elder or Ministerial Servant. It is mandatory that all
-        files passed to WREX be in the EPUB format.
+positional arguments:
+  path                path to a meeting workbook file(s)
 
-OPTIONS
-        -h, --help
-            Display this help and exit.
+optional arguments:
+  -h, --help          show this help message and exit
+  -l, --hall-divider  insert a hall dividing row above presentation rows
+                      (bible reading, improve in ministry, etc.)
+  -v, --version       show program's version number and exit
 
-        -v, --version
-            Show version information and exit.
+Give the Java version a try. Its faster!
 ```
 ### Contribution
 Contributions are always welcome. One way is to translate the values in the JSON files in [language](./language) to the languages indicated by the file names.
