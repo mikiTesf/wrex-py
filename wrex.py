@@ -27,7 +27,7 @@ class WREX:
         lang_pack = open(join(self._LANGUAGE_FOLDER, lang_pack_name), mode='r')
         return json.load(lang_pack)
 
-    def read_pubs_and_generate_excel_doc(self, file_args: list):
+    def read_pubs_and_generate_excel(self, file_args: list):
         lang_pub_pair = self.get_lang_pub_pair(file_args)
         content_reader = ContentReader()
         content_parser = ContentParser()
@@ -35,11 +35,18 @@ class WREX:
         for lang_key in lang_pub_pair:
             language_pack = self.get_lang_pack(lang_code=lang_key)
             # read contents of the publications of the given language key (lang_key)
-            pub_extracts = content_reader.get_publication_extracts(lang_pub_pair[lang_key])
+            print('reading file(s)...')
+            extracts = [
+                content_reader.get_publication_extracts(pub_file)
+                for pub_file in lang_pub_pair[lang_key]
+            ]
             # parse contents
-            content_parser.all_publication_extracts = pub_extracts
             content_parser.filter_for_minute = language_pack['filter_for_minute']
-            pub_extracts = content_parser.build_meeting_objects()
+            print('parsing dom to build meeting objects...')
+            pub_extracts = [
+                content_parser.build_meeting_objects(pub_extract)
+                for pub_extract in extracts
+            ]
             # generate Excel document
             excel_generator = ExcelGenerator(pub_extracts, language_pack)
             excel_generator.create_excel_doc()
@@ -74,6 +81,6 @@ if __name__ == '__main__':
     parsed_args = arg_parser.parse_args()
 
     wrex = WREX()
-    wrex.read_pubs_and_generate_excel_doc(
+    wrex.read_pubs_and_generate_excel(
         [open(pub, 'rb') for pub in parsed_args.path]
     )

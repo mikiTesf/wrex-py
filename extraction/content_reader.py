@@ -1,10 +1,7 @@
-from typing import List
 from os.path import basename
 
 from zipfile import ZipFile
 from zipfile import BadZipFile
-
-from extraction.pub_extract import PubExtract
 
 
 class ContentReader:
@@ -23,31 +20,23 @@ class ContentReader:
             'extracted'
         ]
 
-    def get_publication_extracts(self, pub_files):
-        pub_extracts = []  # type: List[PubExtract]
-        print('reading file(s)...')
+    def get_publication_extracts(self, pub_file):
+        meeting_extracts = []
 
-        for mwb_pub in pub_files:
-            meeting_extracts = []
+        try:
+            epub_archive = ZipFile(pub_file)
+        except BadZipFile:
+            print('"{}" is not an EPUB file. Skipping...'.format(pub_file.name))
+            return
 
-            try:
-                epub_archive = ZipFile(mwb_pub)
-            except BadZipFile:
-                print('"{}" is not an EPUB file. Skipping...'.format(mwb_pub.name))
-                continue
-
-            for entry_name in epub_archive.namelist():
-                if self._unneeded_entry(entry_name):
-                    continue
-
+        for entry_name in epub_archive.namelist():
+            if not self._unneeded_entry(entry_name):
                 content_string = epub_archive.read(entry_name).decode('utf-8')
-                if not self._is_a_meeting_xhtml(content_string):
-                    continue
-                meeting_extracts.append(content_string)
-            epub_archive.close()
-            pub_extracts.append(PubExtract(basename(mwb_pub.name), meeting_extracts))
+                if self._is_a_meeting_xhtml(content_string):
+                    meeting_extracts.append(content_string)
+        epub_archive.close()
 
-        return pub_extracts
+        return {'file_name': basename(pub_file.name).replace('.epub', ''), 'string_extracts': meeting_extracts}
 
     def _unneeded_entry(self, entry_name):
         for test_name in self.__UNNEEDED_CONTENT_NAMES:

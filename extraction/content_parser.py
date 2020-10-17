@@ -2,7 +2,7 @@ from typing import List
 
 from bs4 import BeautifulSoup
 import json
-from os import sep
+from os.path import join, dirname
 
 from extraction.pub_extract import PubExtract
 from meeting.meeting import Meeting
@@ -12,31 +12,26 @@ from meeting.meeting_section import MeetingSection
 
 class ContentParser:
 
-    def __init__(self, all_publication_extracts: List[PubExtract] = None, filter_for_minute: str = None):
-        self.all_publication_extracts = all_publication_extracts
+    def __init__(self, filter_for_minute: str = None):
         self.filter_for_minute = filter_for_minute
 
-        with open('extraction{}element_selectors.json'.format(sep), 'r') as json_file:
+        with open(join(dirname(__file__), 'element_selectors.json'), 'r') as json_file:
             self.element_selectors = json.load(json_file)
 
-    def build_meeting_objects(self):
-        print('parsing dom to build meeting objects...')
+    def build_meeting_objects(self, extract: dict = None):
+        meetings: List[Meeting] = []
 
-        for publication_extract in self.all_publication_extracts:
-            meetings: List[Meeting] = []
+        for week_meeting_content in extract['string_extracts']:
+            meeting_content = BeautifulSoup(week_meeting_content, 'html.parser')
+            # the next few lines is where the meeting object is built
+            week_span = meeting_content.find(self.element_selectors["week_span_element"]).text
+            treasures_section = self.get_section_content(SectionKind.TREASURES, meeting_content)
+            ministry_section = self.get_section_content(SectionKind.IMPROVE_IN_MINISTRY, meeting_content)
+            christian_section = self.get_section_content(SectionKind.CHRISTIAN_LIVING, meeting_content)
 
-            for week_meeting_content in publication_extract.meetings:
-                meeting_content = BeautifulSoup(week_meeting_content, 'html.parser')
-                # the next few lines is where the meeting object is built
-                week_span = meeting_content.find(self.element_selectors["week_span_element"]).text
-                treasures_section = self.get_section_content(SectionKind.TREASURES, meeting_content)
-                ministry_section = self.get_section_content(SectionKind.IMPROVE_IN_MINISTRY, meeting_content)
-                christian_section = self.get_section_content(SectionKind.CHRISTIAN_LIVING, meeting_content)
+            meetings.append(Meeting(week_span, treasures_section, ministry_section, christian_section))
 
-                meetings.append(Meeting(week_span, treasures_section, ministry_section, christian_section))
-            publication_extract.meetings = meetings
-
-        return self.all_publication_extracts
+        return PubExtract(extract['file_name'], meetings)
 
     def get_section_content(self, section_kind, meeting_content):
         section_title = self.get_section_title(section_kind, meeting_content)
