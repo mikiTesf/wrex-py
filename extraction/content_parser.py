@@ -18,13 +18,13 @@ class ContentParser:
         with open(join(dirname(__file__), 'element_selectors.json'), 'r') as json_file:
             self.element_selectors = json.load(json_file)
 
-    def build_meeting_objects(self, extract: dict = None):
+    def build_meeting_objects(self, extract: dict):
         meetings: List[Meeting] = []
 
         for week_meeting_content in extract['string_extracts']:
             meeting_content = BeautifulSoup(week_meeting_content, 'html.parser')
             # the next few lines is where the meeting object is built
-            week_span = meeting_content.find(self.element_selectors["week_span_element"]).text
+            week_span = meeting_content.find(self.element_selectors["week_span_element"]).get_text()
             treasures_section = self.get_section_content(SectionKind.TREASURES, meeting_content)
             ministry_section = self.get_section_content(SectionKind.IMPROVE_IN_MINISTRY, meeting_content)
             christian_section = self.get_section_content(SectionKind.CHRISTIAN_LIVING, meeting_content)
@@ -43,16 +43,16 @@ class ContentParser:
 
     def get_section_title(self, section_kind: SectionKind, meeting_content: BeautifulSoup):
         if section_kind == SectionKind.TREASURES:
-            title = meeting_content.find('div', id=self.element_selectors["treasures_section_id"])
-            title = title.find(self.element_selectors["meeting_section_title_element"]).text
+            title_element = meeting_content.find('div', id=self.element_selectors["treasures_section_id"])
+            title_element = title_element.find(self.element_selectors["meeting_section_title_element"]).get_text()
         elif section_kind == SectionKind.IMPROVE_IN_MINISTRY:
-            title = meeting_content.find('div', id=self.element_selectors["ministry_section_id"])
-            title = title.find(self.element_selectors["meeting_section_title_element"]).text
+            title_element = meeting_content.find('div', id=self.element_selectors["ministry_section_id"])
+            title_element = title_element.find(self.element_selectors["meeting_section_title_element"]).get_text()
         else:
-            title = meeting_content.find('div', id=self.element_selectors["christian_life_section_id"])
-            title = title.find(self.element_selectors["meeting_section_title_element"]).text
+            title_element = meeting_content.find('div', id=self.element_selectors["christian_life_section_id"])
+            title_element = title_element.find(self.element_selectors["meeting_section_title_element"]).get_text()
 
-        return title
+        return title_element
 
     def get_section_presentations(self, section_kind: SectionKind, meeting_content: BeautifulSoup):
         section_dom = self.get_section_dom(section_kind, meeting_content)
@@ -64,7 +64,7 @@ class ContentParser:
             del section_dom[-2:]  # "concluding song" and "next week preview"
 
         for li in section_dom:
-            presentation_content = li.find_next(self.element_selectors["presentation_titles_element"]).text
+            presentation_content = li.find_next(self.element_selectors["presentation_titles_element"]).get_text()
 
             if self.filter_for_minute not in presentation_content:
                 continue

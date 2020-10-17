@@ -29,34 +29,45 @@ class WREX:
 
     def read_pubs_and_generate_excel(self, file_args: list):
         lang_pub_pair = self.get_lang_pub_pair(file_args)
-        content_reader = ContentReader()
-        content_parser = ContentParser()
 
         for lang_key in lang_pub_pair:
             language_pack = self.get_lang_pack(lang_code=lang_key)
-            # read contents of the publications of the given language key (lang_key)
-            print('reading file(s)...')
-            extracts = [
-                content_reader.get_publication_extracts(pub_file)
-                for pub_file in lang_pub_pair[lang_key]
-            ]
-            # parse contents
-            content_parser.filter_for_minute = language_pack['filter_for_minute']
-            print('parsing dom to build meeting objects...')
-            pub_extracts = [
-                content_parser.build_meeting_objects(pub_extract)
-                for pub_extract in extracts
-            ]
-            # generate Excel document
-            excel_generator = ExcelGenerator(pub_extracts, language_pack)
+            # generate Excel document(s)
+            excel_generator = ExcelGenerator(
+                self.get_pub_extracts(lang_pub_pair[lang_key],
+                                      language_pack['filter_for_minute']), language_pack)
             excel_generator.create_excel_doc()
+
+    @staticmethod
+    def get_pub_extracts(publications: list, filter_for_minute: str):
+        content_reader = ContentReader()
+        content_parser = ContentParser()
+
+        print('reading file(s)...')
+        extracts = []
+        for pub_file in publications:
+            extract = content_reader.get_publication_extracts(pub_file)
+            if extract:
+                extracts.append(extract)
+        if len(extracts) == 0:
+            sys.exit('Unable to extract meeting content from the publications provided. Exiting...')
+        # parse contents
+        content_parser.filter_for_minute = filter_for_minute
+        print('parsing dom to build meeting objects...')
+        pub_extracts = []
+        for pub_extract in extracts:
+            extract = content_parser.build_meeting_objects(pub_extract)
+            if extract:
+                pub_extracts.append(extract)
+
+        return pub_extracts
 
     @staticmethod
     def get_lang_pub_pair(file_args: list):
         lang_pub_pair = {}
 
         for pub_file in file_args:
-            match = re.match('^mwb_(\\w+)_\\d+\\.epub$', basename(pub_file.name), re.IGNORECASE)
+            match = re.match('^mwb_(\\w+)_\\d+.*$', basename(pub_file.name), re.IGNORECASE)
 
             if lang_pub_pair.get(match.group(1)) is None:
                 lang_pub_pair[match.group(1)] = [pub_file]
@@ -66,12 +77,17 @@ class WREX:
 
 
 if __name__ == '__main__':
+    description = '''
+    wrex-py (from the original wrex written in Java) extracts the presentations in a Meeting Workbook and
+    prepares an Excel document making assignments easy for the responsible Elder or Ministerial Servant.
+    It is mandatory that all files passed to wrex-py be in the EPUB format.'''
+
     arg_parser = argparse.ArgumentParser(
         prog='wrex-py',
-        description="wrex-py (from the original wrex written in Java) extracts the presentations in a Meeting Workbook\
-                    and prepares an Excel document making assignments easy for the responsible Elder or Ministerial\
-                    Servant. It is mandatory that all files passed to wrex-py be in the EPUB format.",
-        allow_abbrev=False)
+        description=description,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        allow_abbrev=False,
+        epilog='Give the Java version a try. Its faster!')
 
     arg_parser.version = 'version 0.1'
     arg_parser.add_argument('path', action='store',
@@ -82,5 +98,4 @@ if __name__ == '__main__':
 
     wrex = WREX()
     wrex.read_pubs_and_generate_excel(
-        [open(pub, 'rb') for pub in parsed_args.path]
-    )
+        [open(pub, 'rb') for pub in parsed_args.path])
