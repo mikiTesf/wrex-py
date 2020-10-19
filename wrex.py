@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import json
 import sys
@@ -7,6 +9,7 @@ from os.path import join, basename
 from extraction.content_parser import ContentParser
 from extraction.content_reader import ContentReader
 from excel.excel_doc_generator import ExcelGenerator
+from excel.config import ExcelConfig
 
 
 class WREX:
@@ -27,15 +30,15 @@ class WREX:
         lang_pack = open(join(self._LANGUAGE_FOLDER, lang_pack_name), mode='r')
         return json.load(lang_pack)
 
-    def read_pubs_and_generate_excel(self, file_args: list, insert_hall_dividers: bool):
+    def read_pubs_and_generate_excel(self, file_args: list, config: ExcelConfig):
         lang_pub_pair = self.get_lang_pub_pair(file_args)
 
         for lang_key in lang_pub_pair:
             language_pack = self.get_lang_pack(lang_code=lang_key)
             # generate Excel document(s)
             excel_generator = ExcelGenerator(
-                self.get_pub_extracts(lang_pub_pair[lang_key],
-                                      language_pack['filter_for_minute']), language_pack, insert_hall_dividers)
+                self.get_pub_extracts(lang_pub_pair[lang_key], language_pack['filter_for_minute']),
+                language_pack, config)
             excel_generator.create_excel_doc()
 
     @staticmethod
@@ -85,20 +88,22 @@ if __name__ == '__main__':
     arg_parser = argparse.ArgumentParser(
         prog='wrex-py',
         description=description,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=argparse.RawTextHelpFormatter,
         allow_abbrev=False,
         epilog='Give the Java version a try. Its faster!')
 
     arg_parser.version = 'version 0.1'
     arg_parser.add_argument('path', action='store',
                             help='path to a meeting workbook file(s)', nargs='+')
-    arg_parser.add_argument('-l', '--hall-divider', action='store_true',
-                            help='insert a hall dividing row above presentation rows'
-                                 ' (bible reading, improve in ministry, etc.)')
+    arg_parser.add_argument('-s', '--single-hall', action='store_false',
+                            help='''don't insert hall dividing labels above presentation rows
+(bible reading and improve in ministry)''')
     arg_parser.add_argument('-v', '--version', action='version')
 
     parsed_args = arg_parser.parse_args()
 
     wrex = WREX()
+    excel_config = ExcelConfig()
+    excel_config.INSERT_HALL_DIVISION_LABELS = parsed_args.single_hall
     wrex.read_pubs_and_generate_excel(
-        [open(pub, 'rb') for pub in parsed_args.path], parsed_args.hall_divider)
+        [open(pub, 'rb') for pub in parsed_args.path], excel_config)

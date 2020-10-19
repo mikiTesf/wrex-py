@@ -4,20 +4,21 @@
 ### How to use **WREX-Py**?
 
 ```
-usage: wrex-py [-h] [-l] [-v] path [path ...]
+usage: wrex-py [-h] [-s] [-v] path [path ...]
 
-    wrex-py (from the original wrex written in Java) extracts the presentations in a Meeting Workbook and
-    prepares an Excel document making assignments easy for the responsible Elder or Ministerial Servant.
-    It is mandatory that all files passed to wrex-py be in the EPUB format.
+    wrex-py (from the original wrex written in Java) extracts the presentations in a
+    Meeting Workbook and prepares an Excel document making assignments easy for the
+    responsible Elder or Ministerial Servant. It is mandatory that all files passed
+    to wrex-py be in the EPUB format.
 
 positional arguments:
-  path                path to a meeting workbook file(s)
+  path               path to a meeting workbook file(s)
 
 optional arguments:
-  -h, --help          show this help message and exit
-  -l, --hall-divider  insert a hall dividing row above presentation rows
-                      (bible reading, improve in ministry, etc.)
-  -v, --version       show program's version number and exit
+  -h, --help         show this help message and exit
+  -s, --single-hall  don't insert hall dividing labels above presentation rows
+                     (bible reading and improve in ministry)
+  -v, --version      show program's version number and exit
 
 Give the Java version a try. Its faster!
 ```

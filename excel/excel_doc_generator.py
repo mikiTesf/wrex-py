@@ -1,8 +1,6 @@
 from datetime import datetime
 import re
-import json
 from typing import List
-from os.path import join, dirname
 
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
@@ -13,30 +11,23 @@ from extraction.pub_extract import PubExtract
 from meeting.meeting_section import MeetingSection
 from meeting.section_kind import SectionKind
 
+from .config import ExcelConfig
+
 
 class ExcelGenerator(object):
 
-    def __init__(self, publication_extracts: List[PubExtract], labels: dict, insert_hall_dividers: bool):
+    def __init__(self, publication_extracts: List[PubExtract], labels: dict, config: ExcelConfig):
         self.publication_extracts = publication_extracts
         self.labels = labels
         self.__CURRENT_ROW = 3
         self.__LEFT_COLUMNS = ['B', 'C', 'D', 'E']
         self.__RIGHT_COLUMNS = ['G', 'H', 'I', 'J']
         self.__ACTIVE_COLUMNS = self.__LEFT_COLUMNS
-        self.insert_hall_divider = insert_hall_dividers
+        self.config = config
         # a new sheet is created for each publication so the program won't
         # use the first sheet (it will be empty). Hence, it it removed
         self.workbook = Workbook()
         self.workbook.remove_sheet(worksheet=self.workbook.get_active_sheet())
-        # formatting constants
-        with open(join(dirname(__file__), 'config.json'), mode='r') as config:
-            config_json = json.load(config)
-            self.TITLE_FONT_SIZE = config_json['font']['title']
-            self.SMALL_FONT_SIZE = config_json['font']['small']
-            self.LARGE_FONT_SIZE = config_json['font']['large']
-            self.MARGIN_SIZE = config_json['length']['margin']
-            self.ROW_HEIGHT = config_json['length']['row_height']
-            self.TITLE_BACKGROUND_COLOR = config_json['color']['section_title_background']
 
     def create_excel_doc(self):
         if len(self.publication_extracts) == 0:
@@ -88,7 +79,7 @@ class ExcelGenerator(object):
 
     def _style_sheet_title(self, sheet: Worksheet):
         cell = self.__ACTIVE_COLUMNS[0] + str(3)
-        sheet[cell].font = Font(bold=True, size=self.TITLE_FONT_SIZE)
+        sheet[cell].font = Font(bold=True, size=self.config.SHEET_TITLE_FONT_SIZE)
         sheet[cell].alignment = Alignment(horizontal='center', vertical='center')
 
     def _insert_header_content(self, week_span: str, sheet: Worksheet):
@@ -119,18 +110,18 @@ class ExcelGenerator(object):
         border = Border(bottom=Side(border_style='thin'))
         # week span
         cell = self.__ACTIVE_COLUMNS[0] + str(week_span_row)
-        sheet[cell].font = Font(bold=True, size=self.LARGE_FONT_SIZE)
+        sheet[cell].font = Font(bold=True, size=self.config.LARGE_FONT_SIZE)
         sheet[cell].alignment = alignment
         # chairman
         cell = self.__ACTIVE_COLUMNS[0] + str(week_span_row + 1)
-        sheet[cell].font = Font(bold=True, size=self.LARGE_FONT_SIZE)
+        sheet[cell].font = Font(bold=True, size=self.config.LARGE_FONT_SIZE)
         sheet[cell].alignment = alignment
         sheet[cell].border = border
         cell = self.__ACTIVE_COLUMNS[3] + str(week_span_row + 1)  # last cell
         sheet[cell].border = border
         # opening prayer
         cell = self.__ACTIVE_COLUMNS[2] + str(week_span_row + 2)
-        sheet[cell].font = Font(size=self.SMALL_FONT_SIZE)
+        sheet[cell].font = Font(size=self.config.SMALL_FONT_SIZE)
         sheet[cell].alignment = alignment
         cell = self.__ACTIVE_COLUMNS[3] + str(week_span_row + 2)  # last cell
         sheet[cell].border = border
@@ -143,35 +134,47 @@ class ExcelGenerator(object):
         end_cell = self.__ACTIVE_COLUMNS[3] + current_row
         # but if the section is 'IMPROVE_IN_MINISTRY' and the user requests hall-dividing
         # rows then it changes to the 3rd row
-        if (meeting_section.section_kind == SectionKind.IMPROVE_IN_MINISTRY) and self.insert_hall_divider:
+        if (meeting_section.section_kind == SectionKind.IMPROVE_IN_MINISTRY) and \
+                self.config.INSERT_HALL_DIVISION_LABELS:
             end_cell = self.__ACTIVE_COLUMNS[1] + current_row
-            self._insert_hall_divider(sheet)
+            self._insert_hall_divider(sheet, meeting_section.section_kind)
 
         sheet.merge_cells(start_cell + ':' + end_cell)
-        self._style_section_title(self.__CURRENT_ROW, sheet)
+        self._style_section_title(self.__CURRENT_ROW, sheet, meeting_section.section_kind)
         self.__CURRENT_ROW += 1
 
-    def _style_section_title(self, title_row: int, sheet: Worksheet):
+    def _style_section_title(self, title_row: int, sheet: Worksheet, section_kind: SectionKind):
+        if section_kind == SectionKind.TREASURES:
+            bg_color = self.config.TREASURES_SECTION_TITLE_BG_COLOR
+        elif section_kind == SectionKind.IMPROVE_IN_MINISTRY:
+            bg_color = self.config.MINISTRY_SECTION_TITLE_BG_COLOR
+        else:
+            bg_color = self.config.CHRISTIAN_LIFE_SECTION_TITLE_BG_COLOR
+
         cell = self.__ACTIVE_COLUMNS[0] + str(title_row)
-        sheet[cell].font = Font(bold=True, size=self.LARGE_FONT_SIZE)
+        sheet[cell].font = Font(bold=True, size=self.config.LARGE_FONT_SIZE)
         sheet[cell].alignment = Alignment(horizontal='left', vertical='center')
-        sheet[cell].fill = PatternFill(patternType='solid', fgColor=self.TITLE_BACKGROUND_COLOR)
+        sheet[cell].fill = PatternFill(patternType='solid', fgColor=bg_color)
         sheet[cell].border = Border(top=Side(border_style='thin'))
 
-    def _insert_hall_divider(self, sheet):
+    def _insert_hall_divider(self, sheet, section_kind: SectionKind):
         current_row = str(self.__CURRENT_ROW)
         main_hall_cell = self.__ACTIVE_COLUMNS[2] + current_row
         second_hall_cell = self.__ACTIVE_COLUMNS[3] + current_row
         sheet[main_hall_cell] = self.labels['main_hall']
         sheet[second_hall_cell] = self.labels['second_hall']
-        self._style_hall_divider(self.__CURRENT_ROW, sheet)
+        self._style_hall_divider(self.__CURRENT_ROW, sheet, section_kind)
 
-    def _style_hall_divider(self, divider_row: int, sheet: Worksheet):
+    def _style_hall_divider(self, divider_row: int, sheet: Worksheet, section_kind: SectionKind):
         main_hall_cell = self.__ACTIVE_COLUMNS[2] + str(divider_row)
         second_hall_cell = self.__ACTIVE_COLUMNS[3] + str(divider_row)
-        font = Font(bold=False, size=self.SMALL_FONT_SIZE)
+        font = Font(bold=False, size=self.config.SMALL_FONT_SIZE)
         alignment = Alignment(horizontal='center', vertical='center')
-        fill = PatternFill(patternType='solid', fgColor='C8C8C8')
+        if section_kind == SectionKind.IMPROVE_IN_MINISTRY:
+            fg_color = self.config.MINISTRY_SECTION_TITLE_BG_COLOR
+        else:
+            fg_color = self.config.DEFAULT_BG_COLOR
+        fill = PatternFill(patternType='solid', fgColor=fg_color)
         border = Border(top=Side(border_style='thin'))
 
         sheet[main_hall_cell].font = font
@@ -189,20 +192,21 @@ class ExcelGenerator(object):
 
         for presentation in meeting_section.presentations:
             if meeting_section.section_kind == SectionKind.TREASURES:
-                if (bible_reading in presentation) and self.insert_hall_divider:
-                    self._insert_hall_divider(sheet)
+                if (bible_reading in presentation) and self.config.INSERT_HALL_DIVISION_LABELS:
+                    self._insert_hall_divider(sheet, meeting_section.section_kind)
                     self.__CURRENT_ROW += 1
             current_row = str(self.__CURRENT_ROW)
             start_cell = self.__ACTIVE_COLUMNS[1] + current_row
 
-            if (meeting_section.section_kind == SectionKind.IMPROVE_IN_MINISTRY) and self.insert_hall_divider:
+            if (meeting_section.section_kind == SectionKind.IMPROVE_IN_MINISTRY) and\
+                    self.config.INSERT_HALL_DIVISION_LABELS:
                 end_cell = self.__ACTIVE_COLUMNS[1] + current_row
             else:
                 end_cell = self.__ACTIVE_COLUMNS[2] + current_row
             sheet[start_cell] = presentation
 
             if (bible_reading not in presentation) or \
-                    (bible_reading in presentation and not self.insert_hall_divider):
+                    (bible_reading in presentation and not self.config.INSERT_HALL_DIVISION_LABELS):
                 sheet.merge_cells(start_cell + ':' + end_cell)
             self._style_section(self.__CURRENT_ROW, sheet)
             self.__CURRENT_ROW += 1
@@ -210,17 +214,17 @@ class ExcelGenerator(object):
     def _style_section(self, presentation_row: int, sheet: Worksheet):
         cell = self.__ACTIVE_COLUMNS[1] + str(presentation_row)
         border = Border(bottom=Side(border_style='thin'))
-        sheet[cell].font = Font(size=self.LARGE_FONT_SIZE)
+        alignment = Alignment(horizontal='center', vertical='center')
+        sheet[cell].font = Font(size=self.config.LARGE_FONT_SIZE)
         sheet[cell].alignment = Alignment(horizontal='left', vertical='center')
         sheet[cell].border = border
-        # The last two cells of the row must also be underlined (where presenter names go)
-        # Usually, its only the last cell that is not underlined. Only the presentations
-        # under the IMPROVE_IN_MINISTRY section leave the last two cells not underlined.
-        # But, a general solution is to underline the last two cells of all presentation rows
+        # underline and center the last two cells of a presentation row (that is where presenter names go)
         cell = self.__ACTIVE_COLUMNS[2] + str(presentation_row)
         sheet[cell].border = border
+        sheet[cell].alignment = alignment
         cell = self.__ACTIVE_COLUMNS[3] + str(presentation_row)
         sheet[cell].border = border
+        sheet[cell].alignment = alignment
 
     def _insert_footer_content(self, sheet: Worksheet):
         footer_row = self.__CURRENT_ROW
@@ -236,7 +240,7 @@ class ExcelGenerator(object):
         self._style_footer_content(footer_row, sheet)
 
     def _style_footer_content(self, footer_row: int, sheet: Worksheet):
-        font = Font(size=self.SMALL_FONT_SIZE)
+        font = Font(size=self.config.SMALL_FONT_SIZE)
         alignment = Alignment(horizontal='left', vertical='center')
         border = Border(bottom=Side(border_style='thin'))
 
@@ -256,7 +260,7 @@ class ExcelGenerator(object):
     def _final_styling_touches(self, sheet: Worksheet):
         sheet.page_setup.paperSize = Worksheet.PAPERSIZE_A4
         sheet.sheet_properties.pageSetUpPr.fitToPage = True
-        sheet.page_margins = PageMargins(left=self.MARGIN_SIZE, right=self.MARGIN_SIZE)
+        sheet.page_margins = PageMargins(left=self.config.MARGIN_LENGTH, right=self.config.MARGIN_LENGTH)
         sheet.column_dimensions[self.__LEFT_COLUMNS[0]].width = 4
         sheet.column_dimensions[self.__LEFT_COLUMNS[1]].width = 42
         sheet.column_dimensions[self.__RIGHT_COLUMNS[0]].width = 4
@@ -264,4 +268,4 @@ class ExcelGenerator(object):
 
         for rows in sheet.iter_rows(min_row=3):
             for row in rows:
-                sheet.row_dimensions[row.row].height = self.ROW_HEIGHT
+                sheet.row_dimensions[row.row].height = self.config.ROW_HEIGHT
