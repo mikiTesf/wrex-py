@@ -32,8 +32,7 @@ class ContentParser:
     def get_section_content(self, section_kind, meeting_content):
         section_title = self.get_section_title(section_kind, meeting_content)
         meeting_section = MeetingSection(section_kind, section_title)
-        section_presentations = self.get_section_presentations(section_kind, meeting_content)
-        meeting_section.set_presentations(section_presentations)
+        meeting_section.presentations = self.get_section_presentations(section_kind, meeting_content)
 
         return meeting_section
 
@@ -62,11 +61,10 @@ class ContentParser:
         for li in section_dom:
             presentation_content = li.find_next(DomSelectors.PRESENTATION_TITLES_ELEMENT).get_text()
 
-            if self.filter_for_minute not in presentation_content:
-                continue
-            presentation_content = presentation_content[0:presentation_content.index(self.filter_for_minute)]
-            presentation_content = presentation_content + self.filter_for_minute + ')'
-            presentations.append(presentation_content)
+            if self.filter_for_minute in presentation_content:
+                presentation_content = presentation_content[0:presentation_content.index(self.filter_for_minute)]
+                presentation_content = presentation_content + self.filter_for_minute + ')'
+                presentations.append(presentation_content)
 
         return presentations
 

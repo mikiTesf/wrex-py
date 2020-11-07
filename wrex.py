@@ -80,14 +80,12 @@ class WREX:
 
 
 if __name__ == '__main__':
-    description = '''
-    wrex-py (from the original wrex written in Java) extracts the presentations in a Meeting Workbook and
-    prepares an Excel document making assignments easy for the responsible Elder or Ministerial Servant.
-    It is mandatory that all files passed to wrex-py be in the EPUB format.'''
-
     arg_parser = argparse.ArgumentParser(
         prog='wrex-py',
-        description=description,
+        description='''
+    wrex-py (from the original wrex written in Java) extracts the presentations in a Meeting Workbook and
+    prepares an Excel document making assignments easy for the responsible Elder or Ministerial Servant.
+    It is mandatory that all files passed to wrex-py be in the EPUB format.''',
         formatter_class=argparse.RawTextHelpFormatter,
         allow_abbrev=False,
         epilog='Give the Java version a try. Its faster!')
@@ -105,5 +103,13 @@ if __name__ == '__main__':
     wrex = WREX()
     excel_config = ExcelConfig()
     excel_config.INSERT_HALL_DIVISION_LABELS = parsed_args.single_hall
-    wrex.read_pubs_and_generate_excel(
-        [open(pub, 'rb') for pub in parsed_args.path], excel_config)
+
+    paths = []
+
+    for pub in parsed_args.path:
+        try:
+            paths.append(open(pub, 'rb'))
+        except (FileNotFoundError, IsADirectoryError):
+            print(f"'{pub}' not found. Path maybe incomplete.")
+
+    wrex.read_pubs_and_generate_excel(paths, excel_config)
