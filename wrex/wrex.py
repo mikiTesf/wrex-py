@@ -85,9 +85,9 @@ def main():
     arg_parser = argparse.ArgumentParser(
         prog='wrex-py',
         description='''
-        wrex-py (from the original wrex written in Java) extracts the presentations in a Meeting Workbook and
-        prepares an Excel document making assignments easy for the responsible Elder or Ministerial Servant.
-        It is mandatory that all files passed to wrex-py be in the EPUB format.''',
+    wrex-py (from the original wrex written in Java) extracts the presentations in a Meeting Workbook and
+    prepares an Excel document making assignments easy for the responsible Elder or Ministerial Servant.
+    It is mandatory that all files passed to wrex-py be in the EPUB format.''',
         formatter_class=argparse.RawTextHelpFormatter,
         allow_abbrev=False,
         epilog='Give the Java version a try. Its faster!')
@@ -97,7 +97,7 @@ def main():
                             help='path to a meeting workbook file(s)', nargs='+')
     arg_parser.add_argument('-s', '--single-hall', action='store_false',
                             help='''don't insert hall dividing labels above presentation rows
-    (bible reading and improve in ministry)''')
+(bible reading and improve in ministry)''')
     arg_parser.add_argument('-v', '--version', action='version')
 
     parsed_args = arg_parser.parse_args()

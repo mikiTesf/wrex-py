@@ -24,17 +24,15 @@ class ContentReader:
         meeting_extracts = []
 
         try:
-            epub_archive = ZipFile(pub_file)
+            with ZipFile(pub_file) as epub_archive:
+                for entry_name in epub_archive.namelist():
+                    if not self._unneeded_entry(entry_name):
+                        content_string = epub_archive.read(entry_name).decode('utf-8')
+                        if self._is_a_meeting_xhtml(content_string):
+                            meeting_extracts.append(content_string)
         except BadZipFile:
-            print('"{}" is not an EPUB file. Skipping...'.format(pub_file.name))
+            print(f"'{pub_file.name}' is not an EPUB file. Skipping...")
             return
-
-        for entry_name in epub_archive.namelist():
-            if not self._unneeded_entry(entry_name):
-                content_string = epub_archive.read(entry_name).decode('utf-8')
-                if self._is_a_meeting_xhtml(content_string):
-                    meeting_extracts.append(content_string)
-        epub_archive.close()
 
         return {'file_name': basename(pub_file.name).replace('.epub', ''), 'string_extracts': meeting_extracts}
 
