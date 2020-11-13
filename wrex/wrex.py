@@ -55,7 +55,7 @@ class WREX:
             if extract:
                 extracts.append(extract)
         if len(extracts) == 0:
-            sys.exit('Unable to extract meeting content from the publications provided. Exiting...')
+            sys.exit('Unable to extract meeting content from the publication(s) provided. Exiting...')
         # parse contents
         content_parser.filter_for_minute = filter_for_minute
         print('parsing dom to build meeting objects...')
@@ -72,7 +72,13 @@ class WREX:
         lang_pub_pair = {}
 
         for pub_file in file_args:
-            match = re.match('^mwb_(\\w+)_\\d+.*$', basename(pub_file.name), re.IGNORECASE)
+            file_name = basename(pub_file.name)
+            match = re.match('^mwb_(\\w+)_\\d+.*$', file_name, re.IGNORECASE)
+
+            if not match:
+                print(f"'{file_name}': this file's name is inconvenient for processing.",
+                      "It must be named like: mwb_<LANG_CODE>_<YEAR-MONTH>.epub. Skipping...")
+                continue
 
             if lang_pub_pair.get(match.group(1)) is None:
                 lang_pub_pair[match.group(1)] = [pub_file]
