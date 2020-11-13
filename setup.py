@@ -7,11 +7,13 @@ from shutil import move
 from wrex import constants
 
 
+# This custom installer is necessary in order to perform the extra task of moving the `languages` folder to the user's
+# home directory so that the program can always look for language files in one place (avoids path related issues)
 class CustomInstall(install):
 
     def run(self):
         # create directory to keep language files in
-        makedirs(constants.CONFIG_DIR_PATH, exist_ok=True)
+        makedirs(join(constants.CONFIG_DIR_PATH, constants.LANGUAGES_DIR_NAME), exist_ok=True)
         print(f"putting language files in '{constants.LANGUAGES_DIR_PATH}'")
         # The reason why the absolute path of the 'language' folder is being used is
         # in order to replace the existing language files in case of a re-install. When
