@@ -4,7 +4,7 @@ from os import makedirs, listdir
 from os.path import join
 from shutil import move
 
-from wrex import constants
+from constants import constants
 
 
 # This custom installer is necessary in order to perform the extra task of moving the `languages` folder to the user's
@@ -21,7 +21,7 @@ class CustomInstall(install):
         # '<path to language>...already exists'
         for lang_file in listdir(constants.LANGUAGES_DIR_NAME):
             move(join(constants.LANGUAGES_DIR_NAME, lang_file),
-                 join(constants.CONFIG_DIR_PATH, constants.LANGUAGES_DIR_NAME, lang_file))
+                 join(constants.LANGUAGES_DIR_PATH, lang_file))
 
         install.run(self)
 

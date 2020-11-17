@@ -11,7 +11,7 @@ from extraction.content_reader import ContentReader
 from excel.excel_doc_generator import ExcelGenerator
 from excel.config import ExcelConfig
 
-from .constants import LANGUAGES_DIR_PATH
+from constants.constants import LANGUAGES_DIR_PATH
 
 
 class WREX:
@@ -100,7 +100,7 @@ def main():
 
     arg_parser.version = 'version 0.1'
     arg_parser.add_argument('path', action='store',
-                            help='path to a meeting workbook file(s)', nargs='+')
+                            help='path to a meeting workbook EPUB', nargs='+')
     arg_parser.add_argument('-s', '--single-hall', action='store_false',
                             help='''don't insert hall dividing labels above presentation rows
 (bible reading and improve in ministry)''')
