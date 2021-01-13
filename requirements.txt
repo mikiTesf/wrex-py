@@ -4,3 +4,4 @@ et-xmlfile==1.0.1
 jdcal==1.4.1
 openpyxl==2.6.4
 soupsieve==2.0
+peewee==3.14.0
