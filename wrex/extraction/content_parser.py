@@ -3,10 +3,10 @@ from typing import List
 from bs4 import BeautifulSoup
 from .dom_selectors import DomSelectors
 
-from extraction.pub_extract import PubExtract
-from meeting.meeting import Meeting
-from meeting.section_kind import SectionKind
-from meeting.meeting_section import MeetingSection
+from wrex.extraction.pub_extract import PubExtract
+from wrex.meeting.meeting import Meeting
+from wrex.meeting.section_kind import SectionKind
+from wrex.meeting.meeting_section import MeetingSection
 
 
 class ContentParser:

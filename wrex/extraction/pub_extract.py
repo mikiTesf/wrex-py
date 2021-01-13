@@ -1,7 +1,7 @@
 from typing import List
 import re
 
-from meeting.meeting import Meeting
+from wrex.meeting.meeting import Meeting
 
 
 class PubExtract:

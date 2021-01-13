@@ -6,12 +6,12 @@ import sys
 import re
 from os.path import join, basename
 
-from extraction.content_parser import ContentParser
-from extraction.content_reader import ContentReader
-from excel.excel_doc_generator import ExcelGenerator
-from excel.config import ExcelConfig
+from wrex.extraction.content_parser import ContentParser
+from wrex.extraction.content_reader import ContentReader
+from wrex.excel.excel_doc_generator import ExcelGenerator
+from wrex.excel.config import ExcelConfig
 
-from constants.constants import LANGUAGES_DIR_PATH
+from wrex.constants.constants import LANGUAGES_DIR_PATH
 
 
 class WREX:
@@ -19,6 +19,25 @@ class WREX:
     def __init__(self):
         self._LANGUAGE_FOLDER = LANGUAGES_DIR_PATH
         self._LANG_CODE_PAIR = None
+
+        # noinspection PyTypeChecker
+        self.arg_parser = argparse.ArgumentParser(
+            prog='wrex-py',
+            description='''
+    wrex-py (from the original wrex written in Java) extracts the presentations in a Meeting Workbook and
+    prepares an Excel document making assignments easy for the responsible Elder or Ministerial Servant.
+    It is mandatory that all files passed to wrex-py be in the EPUB format.''',
+            formatter_class=argparse.RawTextHelpFormatter,
+            allow_abbrev=False,
+            epilog='Give the Java version a try. Its faster!')
+
+        self.arg_parser.version = 'version 0.1'
+        self.arg_parser.add_argument('path', action='store',
+                                     help='path to a meeting workbook EPUB', nargs='+')
+        self.arg_parser.add_argument('-s', '--single-hall', action='store_false',
+                                     help='''don't insert hall dividing labels above presentation rows
+        (bible reading and improve in ministry)''')
+        self.arg_parser.add_argument('-v', '--version', action='version')
 
         try:
             lang_resolver_path = join(self._LANGUAGE_FOLDER, 'lang_code.json')
@@ -73,11 +92,11 @@ class WREX:
 
         for pub_file in file_args:
             file_name = basename(pub_file.name)
-            match = re.match('^mwb_(\\w+)_\\d+.*$', file_name, re.IGNORECASE)
+            match = re.match('^mwb_([A-Z]+)_\\d+.*$', file_name)
 
             if not match:
                 print(f"'{file_name}': this file's name is inconvenient for processing.",
-                      "It must be named like: mwb_<LANG_CODE>_<YEAR-MONTH>.epub. Skipping...")
+                      "Its name must follow: mwb_<LANG_CODE>_<YEAR-MONTH>.epub. Skipping...")
                 continue
 
             if lang_pub_pair.get(match.group(1)) is None:
@@ -88,27 +107,8 @@ class WREX:
 
 
 def main():
-    arg_parser = argparse.ArgumentParser(
-        prog='wrex-py',
-        description='''
-    wrex-py (from the original wrex written in Java) extracts the presentations in a Meeting Workbook and
-    prepares an Excel document making assignments easy for the responsible Elder or Ministerial Servant.
-    It is mandatory that all files passed to wrex-py be in the EPUB format.''',
-        formatter_class=argparse.RawTextHelpFormatter,
-        allow_abbrev=False,
-        epilog='Give the Java version a try. Its faster!')
-
-    arg_parser.version = 'version 0.1'
-    arg_parser.add_argument('path', action='store',
-                            help='path to a meeting workbook EPUB', nargs='+')
-    arg_parser.add_argument('-s', '--single-hall', action='store_false',
-                            help='''don't insert hall dividing labels above presentation rows
-(bible reading and improve in ministry)''')
-    arg_parser.add_argument('-v', '--version', action='version')
-
-    parsed_args = arg_parser.parse_args()
-
     wrex = WREX()
+    parsed_args = wrex.arg_parser.parse_args()
     excel_config = ExcelConfig()
     excel_config.INSERT_HALL_DIVISION_LABELS = parsed_args.single_hall
 
@@ -117,11 +117,11 @@ def main():
     for pub in parsed_args.path:
         try:
             paths.append(open(pub, 'rb'))
-        except (FileNotFoundError, IsADirectoryError):
-            print(f"'{pub}' not found. Path maybe incomplete.")
+        except (IsADirectoryError, FileNotFoundError):
+            print(f"'{pub}': this file is either a directory or it doesn't exist")
 
     wrex.read_pubs_and_generate_excel(paths, excel_config)
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

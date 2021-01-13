@@ -1,38 +1,10 @@
 import setuptools
-from setuptools.command.install import install
-from os import makedirs, listdir
-from os.path import join
-from shutil import move
-
-from constants import constants
-
-
-# This custom installer is necessary in order to perform the extra task of moving the `languages` folder to the user's
-# home directory so that the program can always look for language files in one place (avoids path related issues)
-class CustomInstall(install):
-
-    def run(self):
-        # create directory to keep language files in
-        makedirs(join(constants.CONFIG_DIR_PATH, constants.LANGUAGES_DIR_NAME), exist_ok=True)
-        print(f"putting language files in '{constants.LANGUAGES_DIR_PATH}'")
-        # The reason why the absolute path of the 'language' folder is being used is
-        # in order to replace the existing language files in case of a re-install. When
-        # the relative path to the 'language' folder is used the installation fails with
-        # '<path to language>...already exists'
-        for lang_file in listdir(constants.LANGUAGES_DIR_NAME):
-            move(join(constants.LANGUAGES_DIR_NAME, lang_file),
-                 join(constants.LANGUAGES_DIR_PATH, lang_file))
-
-        install.run(self)
 
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    cmdclass={
-        'install': CustomInstall
-    },
     name="wrex-py",
     version="0.1",
     author="Mikyas Tesfamichael",
@@ -54,7 +26,7 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
-            'wrex-py = wrex.wrex:main'
+            'wrex-py = wrex.__main__:main'
         ]
     },
     python_requires='>=3.6'

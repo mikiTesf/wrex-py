@@ -7,9 +7,9 @@ from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.worksheet.page import PageMargins
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
-from extraction.pub_extract import PubExtract
-from meeting.meeting_section import MeetingSection
-from meeting.section_kind import SectionKind
+from wrex.extraction.pub_extract import PubExtract
+from wrex.meeting.meeting_section import MeetingSection
+from wrex.meeting.section_kind import SectionKind
 
 from .config import ExcelConfig
 
