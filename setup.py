@@ -14,10 +14,11 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/mikiTesf/wrex-py",
     packages=setuptools.find_packages(),
+    package_data={'wrex.data': ['data.db']},
     install_requires=[
         "beautifulsoup4==4.8.2", "configparser==4.0.2",
-        "et-xmlfile==1.0.1", "jdcal==1.4.1",
-        "openpyxl==2.6.4", "soupsieve==2.0",
+        "et-xmlfile==1.0.1", "jdcal==1.4.1", "openpyxl==2.6.4",
+        "soupsieve==2.0", "peewee==3.14.0"
     ],
     classifiers=[
         "Programming Language :: Python :: 3.6",

@@ -23,5 +23,5 @@ optional arguments:
 Give the Java version a try. Its faster!
 ```
 ### Contribution
-Contributions are always welcome. One way is to translate the values in the JSON files in [language/](./language) to the languages indicated by the file names.
-Right now, all values in almost all the files are written in English.
+Contributions are always welcome. One way is to translate the columns in the `language` table in [data.db](wrex/data/data.db) to the language indicated by the
+`lang_key` column. Right now, all values in almost all the rows are in English.
