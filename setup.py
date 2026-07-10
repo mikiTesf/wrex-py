@@ -18,7 +18,7 @@ setuptools.setup(
     install_requires=[
         "beautifulsoup4==4.8.2", "configparser==4.0.2",
         "et-xmlfile==1.0.1", "jdcal==1.4.1", "openpyxl==2.6.4",
-        "soupsieve==2.0", "peewee==3.14.0"
+        "soupsieve==2.8.4", "peewee==3.14.0"
     ],
     classifiers=[
         "Programming Language :: Python :: 3.6",
